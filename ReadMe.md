@@ -7,11 +7,11 @@ This add-on wraps the GLFW functionality, so it will most likely only work if yo
 
 #How to Use
 
-Just update the singleton object every frame:
+Just initalize the singleton object once:
 
 ```
-	void ofApp::update(){
-		ofxGLFWJoystick::one().update();
+	void ofApp::setup(){
+		ofxGLFWJoystick::init();
 	}
 ```
 
@@ -31,8 +31,6 @@ That's all! To know what features are supported on your joystick, or if it's sup
 
 #Notes
 * Only tested on OSX. 
-
-* It seems that joysticks need to be plugged in before you launch the app for them to be detected.
 
 * I got an USB Xbox 360 controller to work on OSX using [this](http://tattiebogle.net/index.php/ProjectRoot/Xbox360Controller/OsxDriver).
 

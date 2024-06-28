@@ -17,13 +17,16 @@
 	#include "GLFW/glfw3.h"
 #endif
 
+struct ofxGLFWJoystickAvailability{
+	int joyID;
+	bool available;
+};
+
 
 class ofxGLFWJoystick{
 
 public:
-
-	void setup(){};
-	void update();
+	static void init();
 
 	static ofxGLFWJoystick& one(){
 		static ofxGLFWJoystick instance; // Instantiated on first use.
@@ -36,7 +39,7 @@ public:
 
 
 	int getNumJoysticksAvailable(){ return numJoysticks;};
-	inline bool isJoystickAvailable(int joyID);
+	bool isJoystickAvailable(int joyID);
 	string getJoystickName(int joyID);
 
 	void drawDebug(int x, int y);
@@ -50,10 +53,15 @@ public:
 	int getNumAxis(int joyID);
 	const unsigned char * getButtonsForJoystick(int joyID);
 	const float * getButtonsForAxis(int joyID);
+	
+	ofEvent<ofxGLFWJoystickAvailability> onAvailabilityChanged;
 
 private:
+	void of_update(ofEventArgs & args);
 
 	ofxGLFWJoystick();
+	~ofxGLFWJoystick();
+	
 	void lookForJoysticks();
 
 	struct JoyData{

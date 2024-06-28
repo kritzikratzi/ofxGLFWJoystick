@@ -13,8 +13,18 @@ ofxGLFWJoystick::ofxGLFWJoystick(){
 	numJoysticks = 0;
 	printJoystickList();
 	lookForJoysticks();
-	//this triggers a deadlock on OSX... sad! we'll need to manually update this...
-	//ofAddListener(ofEvents().update, &one(), &ofxGLFWJoystick::update, OF_EVENT_ORDER_BEFORE_APP);
+	ofAddListener(ofEvents().update, this, &ofxGLFWJoystick::of_update, OF_EVENT_ORDER_BEFORE_APP);
+	
+	glfwSetJoystickCallback([](int jid, int event){
+		ofxGLFWJoystick::one().lookForJoysticks();
+	});
+}
+
+ofxGLFWJoystick::~ofxGLFWJoystick(){
+}
+
+void ofxGLFWJoystick::init(){
+	one();
 }
 
 
@@ -51,16 +61,23 @@ void ofxGLFWJoystick::lookForJoysticks(){
 		if(glfwJoystickPresent(i)){
 			joyData[i].available = true;
 			string name = string(glfwGetJoystickName(i));
+			string id = string(glfwGetJoystickGUID(i));
 			if(name != joyData[i].name){
 				joyData[i].name = name;
 				ofLogNotice("ofxGLFWJoystick") << "Joystick Found at index " << i << ": '" << name << "'";
 				joyData[i].axisData = glfwGetJoystickAxes(i, &joyData[i].numAxis);
 				joyData[i].buttonData = glfwGetJoystickButtons(i, &joyData[i].numButtons);
+
+				ofxGLFWJoystickAvailability a{i,true};
+				onAvailabilityChanged.notify(this, a);
 			}
 			n++;
 		}else{
 			if (joyData[i].name.size()){
 				ofLogNotice("ofxGLFWJoystick") << "Joystick Lost at index " << i << ": '" << joyData[i].name << "'";
+
+				ofxGLFWJoystickAvailability a{i,false};
+				onAvailabilityChanged.notify(this, a);
 			}
 			joyData[i].available = false;
 			joyData[i].name = "";
@@ -70,7 +87,7 @@ void ofxGLFWJoystick::lookForJoysticks(){
 }
 
 
-void ofxGLFWJoystick::update(){
+void ofxGLFWJoystick::of_update(ofEventArgs & args){
 
 	if(ofGetFrameNum()%600 == 1){ //update joystick info every now and then
 		lookForJoysticks();
